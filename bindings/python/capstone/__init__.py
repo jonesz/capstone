@@ -35,6 +35,7 @@ __all__ = [
     'CS_ARCH_TMS320C64X',
     'CS_ARCH_M680X',
     'CS_ARCH_EVM',
+    'CS_ARCH_RISCV',
     'CS_ARCH_ALL',
 
     'CS_MODE_LITTLE_ENDIAN',
@@ -151,7 +152,8 @@ CS_ARCH_M68K = 8
 CS_ARCH_TMS320C64X = 9
 CS_ARCH_M680X = 10
 CS_ARCH_EVM = 11
-CS_ARCH_MAX = 12
+CS_ARCH_RISCV = 12
+CS_ARCH_MAX = 13
 CS_ARCH_ALL = 0xFFFF
 
 # disasm mode
@@ -327,7 +329,7 @@ def copy_ctypes_list(src):
     return [copy_ctypes(n) for n in src]
 
 # Weird import placement because these modules are needed by the below code but need the above functions
-from . import arm, arm64, m68k, mips, ppc, sparc, systemz, x86, xcore, tms320c64x, m680x, evm
+from . import arm, arm64, m68k, mips, ppc, sparc, systemz, x86, xcore, tms320c64x, m680x, evm, riscv
 
 class _cs_arch(ctypes.Union):
     _fields_ = (
@@ -343,6 +345,7 @@ class _cs_arch(ctypes.Union):
         ('tms320c64x', tms320c64x.CsTMS320C64x),
         ('m680x', m680x.CsM680x),
         ('evm', evm.CsEvm),
+        ('riscv', riscv.CsRiscv),
     )
 
 class _cs_detail(ctypes.Structure):
@@ -653,6 +656,8 @@ class CsInsn(object):
             (self.flags, self.operands) = m680x.get_arch_info(self._raw.detail.contents.arch.m680x)
         elif arch == CS_ARCH_EVM:
             (self.pop, self.push, self.fee) = evm.get_arch_info(self._raw.detail.contents.arch.evm)
+        elif arch == CS_ARCH_RISCV:
+            self.operands = riscv.get_arch_info(self._raw.detail.contents.arch.riscv)
 
 
     def __getattr__(self, name):
@@ -1077,7 +1082,7 @@ def debug():
     archs = { "arm": CS_ARCH_ARM, "arm64": CS_ARCH_ARM64, "m68k": CS_ARCH_M68K, \
         "mips": CS_ARCH_MIPS, "ppc": CS_ARCH_PPC, "sparc": CS_ARCH_SPARC, \
         "sysz": CS_ARCH_SYSZ, 'xcore': CS_ARCH_XCORE, "tms320c64x": CS_ARCH_TMS320C64X, \
-        "m680x": CS_ARCH_M680X, 'evm': CS_ARCH_EVM }
+        "m680x": CS_ARCH_M680X, 'evm': CS_ARCH_EVM, 'riscv': CS_ARCH_RISCV }
 
     all_archs = ""
     keys = archs.keys()
